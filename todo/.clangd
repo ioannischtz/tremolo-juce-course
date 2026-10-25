@@ -1,0 +1,11 @@
+# The plugin uses a JUCE-module-style unity build: source/*.cpp files are
+# #included into tremolo_plugin.cpp and are never compiled standalone, so they
+# have no entry in compile_commands.json and no #includes of their own.
+# Opening one directly makes clangd see undeclared symbols everywhere.
+# Force-include the module header so symbols resolve, matching the build.
+If:
+  PathMatch: '*/source.*\.cpp'
+CompileFlags:
+  Add:
+    - '-include'
+    - 'C:/dev/tremolo-juce-course/todo/tremolo_plugin/tremolo_plugin.h'
