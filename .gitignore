@@ -11,6 +11,7 @@ cmake-build/
 cmake-*-build/
 ninja-debug-build/
 ninja-release-build/
+compile_commands.json
 done.md
 todo.md
 diff_todo_complete.sh
