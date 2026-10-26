@@ -29,7 +29,7 @@ TEST(Tremolo, ExtractLfo) {
        {Tremolo::LfoWaveform::sine, Tremolo::LfoWaveform::triangle}) {
     Tremolo testee;
     constexpr auto sampleRate = 48000.0;
-    testee.setLfoWaveform(lfoWaveform);
+    testee.selectLfoWaveform(lfoWaveform);
     testee.prepare(sampleRate, static_cast<int>(sampleRate));
 
     juce::AudioBuffer<float> buffer;
@@ -74,10 +74,10 @@ TEST(Tremolo, LfoWaveformTransitionIsSmooth) {
   juce::AudioBuffer<float> processBuffer;
   processBuffer.setSize(channelCount, blockSizeSamples);
 
-  testee.setLfoWaveform(Tremolo::LfoWaveform::sine);
+  testee.selectLfoWaveform(Tremolo::LfoWaveform::sine);
   extractLfo(testee, processBuffer);
   outputBuffer.copyFrom(0, 0, processBuffer, 0, 0, blockSizeSamples);
-  testee.setLfoWaveform(Tremolo::LfoWaveform::triangle);
+  testee.selectLfoWaveform(Tremolo::LfoWaveform::triangle);
   extractLfo(testee, processBuffer);
   outputBuffer.copyFrom(0, blockSizeSamples, processBuffer, 0, 0,
                         blockSizeSamples);

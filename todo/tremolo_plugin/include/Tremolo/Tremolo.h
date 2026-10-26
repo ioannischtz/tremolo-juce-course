@@ -7,7 +7,7 @@
 namespace tremolo {
 class Tremolo {
 public:
-  enum class LfoWAveform : size_t { sine = 0u, triangle = 1u };
+  enum class LfoWaveform : size_t { sine = 0u, triangle = 1u };
   Tremolo() {
     for (auto& lfo : lfos) {
       lfo.setFrequency(5.0f /* Hz */, true);
@@ -26,8 +26,8 @@ public:
     }
   }
 
-  void selectLfoWaveform(LfoWAveform waveform) {
-    jassert(waveform == LfoWAveform::sine || LfoWAveform::triangle == waveform);
+  void selectLfoWaveform(LfoWaveform waveform) {
+    jassert(waveform == LfoWaveform::sine || LfoWaveform::triangle == waveform);
     lfoToSet = waveform;
   }
 
@@ -94,7 +94,7 @@ private:
       juce::dsp::Oscillator<float>{[](auto phase) { return std::sin(phase); }},
       juce::dsp::Oscillator<float>{triangle},
   };
-  LfoWAveform selectedLfo = LfoWAveform::sine;
-  LfoWAveform lfoToSet = selectedLfo;
+  LfoWaveform selectedLfo = LfoWaveform::sine;
+  LfoWaveform lfoToSet = selectedLfo;
 };
 }  // namespace tremolo
