@@ -18,10 +18,19 @@ public:
   void process(juce::AudioBuffer<float>& buffer) noexcept {
     // for each frame
     for (const auto frameIndex : std::views::iota(0, buffer.getNumSamples())) {
+      /*
+       * lfoSample ∈ [ -1, 1 ]
+       * has a range of 2, we can constrain it to a positive range of 1:
+       * (lfoSample + 1) / 2 ∈ [ 0, 1 ]
+       * where we want the gain:
+       * gain ∈ [ 1 - modulationDepth, 1 ]
+       * therefore:
+       * (lfoSample + 1) / 2 * modulationDepth + ( 1 - modulationDepth)
+       */
       const auto lfoValue = lfo.processSample(0.f);
       constexpr auto modulationDepth = 0.4f;
       const auto modulationValue =
-          (modulationDepth * ((0.5f * lfoValue) - 0.5f)) + 1.f;
+          (1.0f - modulationDepth) + (((lfoValue + 1) / 2) * modulationDepth);
 
       // for each channel sample in the frame
       for (const auto channelIndex :
