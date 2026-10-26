@@ -37,8 +37,7 @@ public:
        * therefore:
        * (lfoSample + 1) / 2 * modulationDepth + ( 1 - modulationDepth)
        */
-      const auto selectedLfoIndex = juce::toUnderlyingType(selectedLfo);
-      const auto lfoValue = lfos.at(selectedLfoIndex).processSample(0.f);
+      const auto lfoValue = getNextLfoValue();
       constexpr auto modulationDepth = 0.4f;
       const auto modulationValue =
           (1.0f - modulationDepth) + (((lfoValue + 1) / 2) * modulationDepth);
@@ -64,6 +63,12 @@ public:
   }
 
 private:
+  // Methods
+  float getNextLfoValue() {
+    const auto selectedLfoIndex = juce::toUnderlyingType(selectedLfo);
+    return lfos.at(selectedLfoIndex).processSample(0.f);
+  }
+
   // You should put class members and private functions here
   std::array<juce::dsp::Oscillator<float>, 1u> lfos{
       juce::dsp::Oscillator<float>{[](auto phase) { return std::sin(phase); }}};
