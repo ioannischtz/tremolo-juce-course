@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include "juce_audio_basics/juce_audio_basics.h"
 #include "juce_core/juce_core.h"
 #include "juce_core/system/juce_PlatformDefs.h"
 #include "juce_dsp/juce_dsp.h"
@@ -15,6 +16,8 @@ public:
   }
 
   void prepare(double sampleRate, int expectedMaxFramesPerBlock) {
+    waveformMix.reset(sampleRate, 0.020f);
+    waveformMix.setCurrentAndTargetValue(1.0f);
     const juce::dsp::ProcessSpec processSpec{
         .sampleRate = sampleRate,
         .maximumBlockSize =
@@ -28,7 +31,7 @@ public:
 
   void selectLfoWaveform(LfoWaveform waveform) {
     jassert(waveform == LfoWaveform::sine || LfoWaveform::triangle == waveform);
-    lfoToSet = waveform;
+    uiTargetWaveform = waveform;
   }
 
   void process(juce::AudioBuffer<float>& buffer) noexcept {
@@ -78,15 +81,39 @@ private:
   }
 
   float getNextLfoValue() {
-    const auto selectedLfoIndex = juce::toUnderlyingType(selectedLfo);
-    return lfos.at(selectedLfoIndex).processSample(0.f);
+    const auto activeLfoIndex = juce::toUnderlyingType(dspActiveWaveform);
+    const auto activeLfoValue = lfos.at(activeLfoIndex).processSample(0.f);
+
+    if (!waveformMix.isSmoothing()) {
+      return activeLfoValue;
+    }
+
+    // If reached here, it means we are still smoothing
+    const auto mix = waveformMix.getNextValue();
+    // We need to process both oscillator values to do the mix
+    const auto targetLfoIndex = juce::toUnderlyingType(dspTargetWaveform);
+    const auto targetLfoValue = lfos.at(targetLfoIndex).processSample(0.f);
+    // do the mix
+    const auto mixedValue =
+        (activeLfoValue * (1.0f - mix)) + (targetLfoValue * mix);
+    // Check if the mixing has completed
+    if (!waveformMix.isSmoothing()) {
+      dspActiveWaveform = dspTargetWaveform;
+    }
+
+    return mixedValue;
   }
 
   void updateLfoWaveform() {
-    // TODO: add smoothing
-    if (selectedLfo != lfoToSet) {
-      selectedLfo = lfoToSet;
+    if (dspTargetWaveform == uiTargetWaveform) {
+      return;
     }
+    // A new change was requested
+    dspTargetWaveform = uiTargetWaveform;
+
+    // Reset the smoothedValue mix
+    waveformMix.setCurrentAndTargetValue(0.0f);
+    waveformMix.setTargetValue(1.0f);
   }
 
   // You should put class members and private functions here
@@ -94,7 +121,10 @@ private:
       juce::dsp::Oscillator<float>{[](auto phase) { return std::sin(phase); }},
       juce::dsp::Oscillator<float>{triangle},
   };
-  LfoWaveform selectedLfo = LfoWaveform::sine;
-  LfoWaveform lfoToSet = selectedLfo;
+  LfoWaveform dspActiveWaveform = LfoWaveform::sine;
+  LfoWaveform dspTargetWaveform = LfoWaveform::sine;
+  LfoWaveform uiTargetWaveform = dspTargetWaveform;
+
+  juce::SmoothedValue<float> waveformMix;
 };
 }  // namespace tremolo
