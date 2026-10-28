@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tremolo_plugin/include/Tremolo/Parameters.h"
 namespace tremolo {
 class PluginProcessor : public juce::AudioProcessor {
 public:
@@ -34,8 +35,7 @@ public:
   void setStateInformation(const void* data, int sizeInBytes) override;
 
 private:
-  // TODO: add parameters
-
+  Parameters parameters{*this};
   Tremolo tremolo;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)

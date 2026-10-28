@@ -34,6 +34,13 @@ public:
     uiTargetWaveform = waveform;
   }
 
+  void setModulationRate(float rateHz) {
+    for (auto& lfo : lfos) {
+      // juce::Oscillator class handles smoothing internally
+      lfo.setFrequency(rateHz);
+    }
+  }
+
   void process(juce::AudioBuffer<float>& buffer) noexcept {
     // for each frame
     for (const auto frameIndex : std::views::iota(0, buffer.getNumSamples())) {
