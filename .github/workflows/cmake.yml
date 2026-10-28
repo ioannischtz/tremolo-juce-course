@@ -52,25 +52,28 @@ jobs:
       id: cache-libs
       uses: actions/cache@v4
       with:
-        path: complete/libs
-        key: ${{ runner.os }}-libs-${{ hashFiles('complete/CMakeLists.txt') }}-${{ hashFiles('complete/test/CMakeLists.txt') }}
+        path: todo/libs
+        key: ${{ runner.os }}-libs-${{ hashFiles('todo/CMakeLists.txt') }}-${{ hashFiles('todo/test/CMakeLists.txt') }}
 
     - name: Configure CMake
-      working-directory: ${{ github.workspace }}/complete
+      working-directory: ${{ github.workspace }}/todo
       run: cmake --preset ${{ matrix.preset }}
 
     - name: Build
-      working-directory: ${{ github.workspace }}/complete
+      working-directory: ${{ github.workspace }}/todo
       run: cmake --build --preset ${{ matrix.preset }}
 
     - name: Test
-      working-directory: ${{github.workspace}}/complete
+      working-directory: ${{github.workspace}}/todo
       run: ctest --preset ${{ matrix.preset }}
 
   build-windows:
     strategy:
       matrix:
-        os: [windows-latest]
+        # windows-latest now ships Visual Studio 2026, but the "vs" CMake
+        # preset below targets the Visual Studio 17 2022 generator.
+        # Pin this runner until a VS 2026 preset is added.
+        os: [windows-2022]
         config: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
@@ -84,18 +87,18 @@ jobs:
       id: cache-libs
       uses: actions/cache@v4
       with:
-        path: complete/libs
-        key: ${{ runner.os }}-libs-${{ hashFiles('complete/CMakeLists.txt') }}-${{ hashFiles('complete/test/CMakeLists.txt') }}
+        path: todo/libs
+        key: ${{ runner.os }}-libs-${{ hashFiles('todo/CMakeLists.txt') }}-${{ hashFiles('todo/test/CMakeLists.txt') }}
 
     - name: Configure CMake
-      working-directory: ${{ github.workspace }}/complete
+      working-directory: ${{ github.workspace }}/todo
       run: cmake --preset vs
 
     - name: Build
-      working-directory: ${{ github.workspace }}/complete
+      working-directory: ${{ github.workspace }}/todo
       run: cmake --build --preset vs --config ${{ matrix.config }}
 
     - name: Test
-      working-directory: ${{ github.workspace }}/complete
+      working-directory: ${{ github.workspace }}/todo
       run: ctest --preset vs -C ${{ matrix.config }}
 
