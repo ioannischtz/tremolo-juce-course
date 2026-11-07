@@ -3,4 +3,19 @@ Language:        Cpp
 BasedOnStyle:  Chromium
 AccessModifierOffset: -2
 SortIncludes: Never
+UseTab: Never
+IndentWidth: 4
+BreakBeforeBraces: Allman
+MaxEmptyLinesToKeep: 1
+IndentCaseLabels: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ColumnLimit: 100
+BinPackParameters: OnePerLine
+BinPackArguments: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowAllArgumentsOnNextLine: true
+AlwaysBreakTemplateDeclarations: Yes
+AlignConsecutiveAssignments: true
+AlignAfterOpenBracket: true
+BreakConstructorInitializers: BeforeColon
 ...
