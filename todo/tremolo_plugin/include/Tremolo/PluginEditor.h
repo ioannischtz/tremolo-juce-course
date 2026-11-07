@@ -1,16 +1,18 @@
 #pragma once
 
-namespace tremolo {
-class PluginEditor : public juce::AudioProcessorEditor {
-public:
-  explicit PluginEditor(PluginProcessor&);
+namespace tremolo
+{
+class PluginEditor : public juce::AudioProcessorEditor
+{
+  public:
+    explicit PluginEditor(PluginProcessor&);
 
-  void resized() override;
+    void resized() override;
 
-private:
-  juce::ImageComponent background;
-  juce::ImageComponent logo;
+  private:
+    juce::ImageComponent background;
+    juce::ImageComponent logo;
 
-  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginEditor)
 };
 }  // namespace tremolo
