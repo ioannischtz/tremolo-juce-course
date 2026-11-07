@@ -13,7 +13,9 @@ juce::AudioParameterFloat& createModulationRateParameter(juce::AudioProcessor& p
             "modulation.rate",
             versionHint,
         },
-        "Modulation rate", juce::NormalisableRange{0.1f, 20.f, 0.001f, 0.4f}, 5.f,
+        "Modulation rate",
+        juce::NormalisableRange{0.1f, 20.f, 0.001f, 0.4f},
+        5.f,
         juce::AudioParameterFloatAttributes{}.withLabel("Hz"));
     auto& parameterReference = *parameter;
     processor.addParameter(parameter.release());

@@ -1,21 +1,108 @@
 ---
-Language:        Cpp
-BasedOnStyle:  Chromium
+#Language:        Cpp
+#BasedOnStyle:  Chromium
+#AccessModifierOffset: -2
+#SortIncludes: Never
+#UseTab: Never
+#IndentWidth: 4
+#BreakBeforeBraces: Allman
+#MaxEmptyLinesToKeep: 1
+#IndentCaseLabels: false
+#ConstructorInitializerAllOnOneLineOrOnePerLine: true
+#ColumnLimit: 100
+#BinPackParameters: OnePerLine
+#BinPackArguments: true
+#AllowAllParametersOfDeclarationOnNextLine: true
+#AllowAllArgumentsOnNextLine: true
+#AlwaysBreakTemplateDeclarations: Yes
+#AlignConsecutiveAssignments: true
+#AlignAfterOpenBracket: true
+#BreakConstructorInitializers: BeforeColon
 AccessModifierOffset: -2
-SortIncludes: Never
-UseTab: Never
-IndentWidth: 4
-BreakBeforeBraces: Allman
-MaxEmptyLinesToKeep: 1
-IndentCaseLabels: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
-ColumnLimit: 100
-BinPackParameters: OnePerLine
-BinPackArguments: true
-AllowAllParametersOfDeclarationOnNextLine: true
-AllowAllArgumentsOnNextLine: true
+AlignAfterOpenBracket: true # New in v14. For earlier clang-format versions, use AlwaysBreak instead.
+AlignConsecutiveMacros: false
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: DontAlign
+AlignOperands: AlignAfterOperator
+AlignTrailingComments: false
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
 AlwaysBreakTemplateDeclarations: Yes
-AlignConsecutiveAssignments: true
-AlignAfterOpenBracket: true
-BreakConstructorInitializers: BeforeColon
+BinPackArguments: false
+BinPackParameters: AlwaysOnePerLine
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: AfterColon
+BreakStringLiterals: false
+ColumnLimit: 80
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: FunctionCall
+DerivePointerAlignment: false
+FixNamespaceComments: true
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^<ext/.*\.h>'
+    Priority: 2
+    SortPriority: 0
+    CaseSensitive: false
+  - Regex: '^<.*\.h>'
+    Priority: 1
+    SortPriority: 0
+    CaseSensitive: false
+  - Regex: "^<.*"
+    Priority: 2
+    SortPriority: 0
+    CaseSensitive: false
+  - Regex: ".*"
+    Priority: 3
+    SortPriority: 0
+    CaseSensitive: false
+IncludeIsMainRegex: "([-_](test|unittest))?$"
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+IndentWidth: 4
+IndentWrappedFunctionNames: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: Inner
+PointerAlignment: Left
+ReferenceAlignment: Left # New in v13. int &name  ==>  int& name
+ReflowComments: Never
+SeparateDefinitionBlocks: Always # New in v14.
+SortIncludes: CaseInsensitive
+SortUsingDeclarations: Lexicographic
+SpaceAfterCStyleCast: false
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: false
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: Never
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard: c++20
+TabWidth: 4
+UseTab: Never
 ...
