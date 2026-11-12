@@ -1,16 +1,18 @@
 #pragma once
 
+#include "tremolo_plugin/include/Tremolo/Gain.h"
 #include "tremolo_plugin/include/Tremolo/Parameters.h"
-namespace tremolo
-{
-class PluginProcessor : public juce::AudioProcessor
-{
+
+namespace tremolo {
+class PluginProcessor: public juce::AudioProcessor {
   public:
     PluginProcessor();
 
-    void prepareToPlay(double sampleRate, int expectedMaxFramesPerBlock) override;
+    void prepareToPlay(double sampleRate,
+                       int expectedMaxFramesPerBlock) override;
 
-    void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    void processBlock(juce::AudioBuffer<float>&,
+                      juce::MidiBuffer&) override;
     using AudioProcessor::processBlock;
 
     void releaseResources() override;
@@ -31,14 +33,18 @@ class PluginProcessor : public juce::AudioProcessor
     int getCurrentProgram() override;
     void setCurrentProgram(int index) override;
     const juce::String getProgramName(int index) override;
-    void changeProgramName(int index, const juce::String& newName) override;
+    void changeProgramName(int index,
+                           const juce::String& newName) override;
 
     void getStateInformation(juce::MemoryBlock& destData) override;
-    void setStateInformation(const void* data, int sizeInBytes) override;
+    void setStateInformation(const void* data,
+                             int sizeInBytes) override;
 
   private:
-    Parameters parameters{*this};
+    Parameters parameters {*this};
     Tremolo tremolo;
+    Gain inputGain;
+    Gain outputGain;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };
