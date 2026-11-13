@@ -5,6 +5,12 @@
 
 namespace tremolo {
 namespace {
+    auto& addParameterToProcessor(juce::AudioProcessor& processor, auto parameter) {
+        auto& parameterReference = *parameter;
+        processor.addParameter(parameter.release());
+        return parameterReference;
+    }
+
     juce::AudioParameterFloat& createModulationRateParameter(juce::AudioProcessor& processor) {
         constexpr auto versionHint = 1;
         auto parameter             = std::make_unique<juce::AudioParameterFloat>(
@@ -16,9 +22,7 @@ namespace {
             juce::NormalisableRange {0.1f, 20.f, 0.001f, 0.4f},
             5.f,
             juce::AudioParameterFloatAttributes {}.withLabel("Hz"));
-        auto& parameterReference = *parameter;
-        processor.addParameter(parameter.release());
-        return parameterReference;
+        return addParameterToProcessor(processor, std::move(parameter));
     }
 
     juce::AudioParameterFloat& createGainParameter(juce::AudioProcessor& processor, bool isIn) {
@@ -31,9 +35,19 @@ namespace {
                                                         juce::NormalisableRange {-12.f, 12.f, 0.1f, 1.f},
                                                         0.f,
                                                         juce::AudioParameterFloatAttributes {}.withLabel("dB"));
-        auto& parameterReference = *parameter;
-        processor.addParameter(parameter.release());
-        return parameterReference;
+        return addParameterToProcessor(processor, std::move(parameter));
+    }
+
+    juce::AudioParameterBool& createIsBypassedParameter(juce::AudioProcessor& processor) {
+        constexpr auto versionHint = 1;
+        auto parameter             = std::make_unique<juce::AudioParameterBool>(
+            juce::ParameterID {
+                "isBypassed",
+                versionHint,
+            },
+            "Bypass",
+            false);
+        return addParameterToProcessor(processor, std::move(parameter));
     }
 
 }  // namespace
@@ -44,5 +58,6 @@ Parameters::Parameters(juce::AudioProcessor& processor)
     // TODO: add parameters to the processor
     : rateHz {createModulationRateParameter(processor)},
       inputGainDB {createGainParameter(processor, true)},
-      outputGainDB {createGainParameter(processor, false)} {}
+      outputGainDB {createGainParameter(processor, false)},
+      isBypassed(createIsBypassedParameter(processor)) {}
 }  // namespace tremolo
