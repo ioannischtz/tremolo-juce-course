@@ -1,9 +1,7 @@
 #pragma once
 
-namespace tremolo
-{
-class PluginEditor : public juce::AudioProcessorEditor
-{
+namespace tremolo {
+class PluginEditor: public juce::AudioProcessorEditor {
   public:
     explicit PluginEditor(PluginProcessor&);
 

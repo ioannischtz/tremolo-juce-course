@@ -1,9 +1,7 @@
-namespace tremolo
-{
-PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
-{
-    background.setImage(
-        juce::ImageCache::getFromMemory(assets::Background_png, assets::Background_pngSize));
+namespace tremolo {
+PluginEditor::PluginEditor(PluginProcessor& p)
+    : AudioProcessorEditor(&p) {
+    background.setImage(juce::ImageCache::getFromMemory(assets::Background_png, assets::Background_pngSize));
 
     logo.setImage(juce::ImageCache::getFromMemory(assets::Logo_png, assets::Logo_pngSize));
 
@@ -15,8 +13,7 @@ PluginEditor::PluginEditor(PluginProcessor& p) : AudioProcessorEditor(&p)
     setSize(540, 270);
 }
 
-void PluginEditor::resized()
-{
+void PluginEditor::resized() {
     const auto bounds = getLocalBounds();
 
     background.setBounds(bounds);

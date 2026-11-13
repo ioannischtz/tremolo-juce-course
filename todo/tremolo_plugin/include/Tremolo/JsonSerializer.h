@@ -1,9 +1,7 @@
 #pragma once
 
-namespace tremolo
-{
-class JsonSerializer
-{
+namespace tremolo {
+class JsonSerializer {
   public:
     static void serialize(const Parameters&, juce::OutputStream&);
 

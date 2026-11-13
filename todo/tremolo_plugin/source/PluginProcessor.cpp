@@ -1,13 +1,9 @@
 
 namespace tremolo {
-PluginProcessor::PluginProcessor() :
-    AudioProcessor(BusesProperties()
-                       .withInput("Input",
-                                  juce::AudioChannelSet::stereo(),
-                                  true)
-                       .withOutput("Output",
-                                   juce::AudioChannelSet::stereo(),
-                                   true)) {}
+PluginProcessor::PluginProcessor()
+    : AudioProcessor(BusesProperties()
+                         .withInput("Input", juce::AudioChannelSet::stereo(), true)
+                         .withOutput("Output", juce::AudioChannelSet::stereo(), true)) {}
 
 const juce::String PluginProcessor::getName() const {
     return TREMOLO_PLUGIN_NAME;
@@ -48,13 +44,11 @@ const juce::String PluginProcessor::getProgramName(int index) {
     return "None";
 }
 
-void PluginProcessor::changeProgramName(int index,
-                                        const juce::String& newName) {
+void PluginProcessor::changeProgramName(int index, const juce::String& newName) {
     juce::ignoreUnused(index, newName);
 }
 
-void PluginProcessor::prepareToPlay(double sampleRate,
-                                    int expectedMaxFramesPerBlock) {
+void PluginProcessor::prepareToPlay(double sampleRate, int expectedMaxFramesPerBlock) {
     // Use this method as the place to do any pre-playback
     // initialization that you need, e.g., allocate memory.
     inputGain.prepare(sampleRate);
@@ -76,8 +70,7 @@ bool PluginProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
     // Some plugin hosts, such as certain GarageBand versions, will only
     // load plugins that support stereo bus layouts.
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-        && layouts.getMainOutputChannelSet()
-               != juce::AudioChannelSet::stereo()) {
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo()) {
         return false;
     }
 
@@ -89,12 +82,11 @@ bool PluginProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
     return true;
 }
 
-void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer,
-                                   juce::MidiBuffer& midiMessages) {
+void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages) {
     juce::ignoreUnused(midiMessages);
 
     juce::ScopedNoDenormals noDenormals;
-    const auto totalNumInputChannels = getTotalNumInputChannels();
+    const auto totalNumInputChannels  = getTotalNumInputChannels();
     const auto totalNumOutputChannels = getTotalNumOutputChannels();
 
     // In case we have more outputs than inputs, this code clears any output
@@ -103,8 +95,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer,
     // This is here to avoid people getting screaming feedback
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
-    for (const auto channelToClear :
-         std::views::iota(totalNumInputChannels, totalNumOutputChannels)) {
+    for (const auto channelToClear : std::views::iota(totalNumInputChannels, totalNumOutputChannels)) {
         buffer.clear(channelToClear, 0, buffer.getNumSamples());
     }
 
@@ -137,8 +128,7 @@ void PluginProcessor::getStateInformation(juce::MemoryBlock& destData) {
     // TODO: implement state serialization to JSON
 }
 
-void PluginProcessor::setStateInformation(const void* data,
-                                          int sizeInBytes) {
+void PluginProcessor::setStateInformation(const void* data, int sizeInBytes) {
     // You should use this method to restore your parameters from this memory
     // block, whose contents will have been created by the getStateInformation()
     // call.

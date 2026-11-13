@@ -1,90 +1,55 @@
 ---
-#Language:        Cpp
-#BasedOnStyle:  Chromium
-#AccessModifierOffset: -2
-#SortIncludes: Never
-#UseTab: Never
-#IndentWidth: 4
-#BreakBeforeBraces: Allman
-#MaxEmptyLinesToKeep: 1
-#IndentCaseLabels: false
-#ConstructorInitializerAllOnOneLineOrOnePerLine: true
-#ColumnLimit: 100
-#BinPackParameters: OnePerLine
-#BinPackArguments: true
-#AllowAllParametersOfDeclarationOnNextLine: true
-#AllowAllArgumentsOnNextLine: true
-#AlwaysBreakTemplateDeclarations: Yes
-#AlignConsecutiveAssignments: true
-#AlignAfterOpenBracket: true
-#BreakConstructorInitializers: BeforeColon
+Language: Cpp
+BasedOnStyle: LLVM
 AccessModifierOffset: -2
-AlignAfterOpenBracket: true # New in v14. For earlier clang-format versions, use AlwaysBreak instead.
-AlignConsecutiveMacros: false
-AlignConsecutiveAssignments: false
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
-AlignEscapedNewlines: DontAlign
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Left
 AlignOperands: AlignAfterOperator
-AlignTrailingComments: false
-AllowAllArgumentsOnNextLine: false
-AllowAllConstructorInitializersOnNextLine: false
-AllowAllParametersOfDeclarationOnNextLine: false
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: false
+AllowShortNamespacesOnASingleLine: false
 AlwaysBreakAfterReturnType: None
-AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
-BinPackParameters: AlwaysOnePerLine
+BinPackParameters: false
 BreakBeforeBinaryOperators: NonAssignment
 BreakBeforeBraces: Attach
 BreakBeforeTernaryOperators: true
-BreakConstructorInitializers: AfterColon
-BreakInheritanceList: AfterColon
+BreakConstructorInitializers: BeforeColon
+BreakInheritanceList: BeforeColon
 BreakStringLiterals: false
-ColumnLimit: 80
+ColumnLimit: 120
 CompactNamespaces: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-Cpp11BracedListStyle: FunctionCall
+Cpp11BracedListStyle: true
 DerivePointerAlignment: false
 FixNamespaceComments: true
-IncludeBlocks: Regroup
-IncludeCategories:
-  - Regex: '^<ext/.*\.h>'
-    Priority: 2
-    SortPriority: 0
-    CaseSensitive: false
-  - Regex: '^<.*\.h>'
-    Priority: 1
-    SortPriority: 0
-    CaseSensitive: false
-  - Regex: "^<.*"
-    Priority: 2
-    SortPriority: 0
-    CaseSensitive: false
-  - Regex: ".*"
-    Priority: 3
-    SortPriority: 0
-    CaseSensitive: false
-IncludeIsMainRegex: "([-_](test|unittest))?$"
-IndentCaseLabels: true
+IncludeBlocks: Preserve
+IndentCaseLabels: false
 IndentPPDirectives: BeforeHash
 IndentWidth: 4
 IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: Inner
+PackConstructorInitializers: Never
 PointerAlignment: Left
-ReferenceAlignment: Left # New in v13. int &name  ==>  int& name
+ReferenceAlignment: Left
 ReflowComments: Never
-SeparateDefinitionBlocks: Always # New in v14.
-SortIncludes: CaseInsensitive
+SeparateDefinitionBlocks: Always
+SortIncludes: Never
 SortUsingDeclarations: Lexicographic
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false

@@ -18,14 +18,10 @@ class Gain {
 
     void process(juce::AudioBuffer<float>& buffer) noexcept {
         // for each frame
-        for (const auto frameIndex :
-             std::views::iota(0, buffer.getNumSamples())) {
-            auto gain =
-                juce::Decibels::decibelsToGain(targetGainDB.getNextValue());
-            for (const auto channelIndex :
-                 std::views::iota(0, buffer.getNumChannels())) {
-                const auto inputSample =
-                    buffer.getSample(channelIndex, frameIndex);
+        for (const auto frameIndex : std::views::iota(0, buffer.getNumSamples())) {
+            auto gain = juce::Decibels::decibelsToGain(targetGainDB.getNextValue());
+            for (const auto channelIndex : std::views::iota(0, buffer.getNumChannels())) {
+                const auto inputSample  = buffer.getSample(channelIndex, frameIndex);
                 const auto outputSample = inputSample * gain;
                 buffer.setSample(channelIndex, frameIndex, outputSample);
             }
