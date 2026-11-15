@@ -1,4 +1,6 @@
 
+#include <cstdint>
+
 namespace tremolo {
 PluginProcessor::PluginProcessor()
     : AudioProcessor(BusesProperties()
@@ -54,6 +56,10 @@ void PluginProcessor::prepareToPlay(double sampleRate, int expectedMaxFramesPerB
     inputGain.prepare(sampleRate);
     tremolo.prepare(sampleRate, expectedMaxFramesPerBlock);
     outputGain.prepare(sampleRate);
+    bypassTransitionSmoother.prepare(
+        {.sampleRate       = sampleRate,
+         .maximumBlockSize = static_cast<uint32_t>(expectedMaxFramesPerBlock),
+         .numChannels = static_cast<uint32_t>(juce::jmax(getTotalNumInputChannels(), getTotalNumOutputChannels()))});
 }
 
 void PluginProcessor::releaseResources() {
@@ -62,6 +68,7 @@ void PluginProcessor::releaseResources() {
     inputGain.reset();
     tremolo.reset();
     outputGain.reset();
+    bypassTransitionSmoother.reset();
 }
 
 bool PluginProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
@@ -103,15 +110,36 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
     tremolo.setModulationRate(parameters.rateHz.get());
     outputGain.setTargetGainDB(parameters.outputGainDB.get());
 
-    // we can instead bypass just the tremolo effect if we want
-    // but in this case we bypass the entire plugin processing
-    if (parameters.isBypassed.get()) {
+    /**
+     * 1. bypassed    & ! isTransitioning()  -> return dry input
+     * 2. ! bypassed  & ! isTransitioning()  -> process wet
+     * 3. bypassed    & isTransitioning()    -> fade out: copy dry, process wet, mix
+     * 4. ! bypassed  & isTransitioning()    -> fade in:  copy dry, process wet, mix
+     */
+
+    const auto isBypassed      = parameters.isBypassed.get();
+    const auto isTransitioning = bypassTransitionSmoother.isTransitioning();
+    bypassTransitionSmoother.setBypass(isBypassed);
+
+    // case 1
+    if (isBypassed && !isTransitioning) {
         return;
     }
 
+    // cases 3 & 4
+    if (isTransitioning) {
+        bypassTransitionSmoother.setDryBuffer(buffer);
+    }
+
+    // process wet
     inputGain.process(buffer);
     tremolo.process(buffer);
     outputGain.process(buffer);
+    // now fully wet
+    // mix if transitioning
+    if (isTransitioning) {
+        bypassTransitionSmoother.mixToWetBuffer(buffer);
+    }
 }
 
 bool PluginProcessor::hasEditor() const {

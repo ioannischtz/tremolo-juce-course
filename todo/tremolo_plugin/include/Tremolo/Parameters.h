@@ -12,7 +12,7 @@ struct Parameters {
     juce::AudioParameterFloat& outputGainDB;
     juce::AudioParameterBool& isBypassed;
 
-    JUCE_DECLARE_NON_COPYABLE(Parameters);
-    JUCE_DECLARE_NON_MOVEABLE(Parameters);
+    JUCE_DECLARE_NON_COPYABLE(Parameters)
+    JUCE_DECLARE_NON_MOVEABLE(Parameters)
 };
 }  // namespace tremolo

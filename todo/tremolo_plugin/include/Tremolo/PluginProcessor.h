@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tremolo_plugin/include/Tremolo/BypassTransitionSmoother.h"
 #include "tremolo_plugin/include/Tremolo/Gain.h"
 #include "tremolo_plugin/include/Tremolo/Parameters.h"
 
@@ -43,6 +44,7 @@ class PluginProcessor: public juce::AudioProcessor {
     Tremolo tremolo;
     Gain inputGain;
     Gain outputGain;
+    BypassTransitionSmoother bypassTransitionSmoother;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)
 };

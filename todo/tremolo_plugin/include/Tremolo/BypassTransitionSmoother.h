@@ -1,5 +1,9 @@
 #pragma once
 
+#include <ranges>
+#include "juce_dsp/juce_dsp.h"
+#include "tremolo_plugin/include/Tremolo/CrossfadePosition.h"
+
 namespace tremolo {
 /**
  * Class facilitating transition to and from bypassed state over a single block.
@@ -56,39 +60,25 @@ namespace tremolo {
 class BypassTransitionSmoother {
   public:
     explicit BypassTransitionSmoother(double crossfadeLengthSecondsValue = 0.01)
-        : crossfadeLengthSeconds {crossfadeLengthSecondsValue} {
-        jassert(0.0 < crossfadeLengthSeconds);
+        : crossfade {crossfadeLengthSecondsValue} {
+        jassert(0.0 < crossfadeLengthSecondsValue);
     }
 
     void prepare(const juce::dsp::ProcessSpec& spec) {
-        sampleRateHz = spec.sampleRate;
+        crossfade.prepare(spec.sampleRate);
         dryBuffer.setSize(static_cast<int>(spec.numChannels), static_cast<int>(spec.maximumBlockSize));
-        dryGain.reset(spec.sampleRate, crossfadeLengthSeconds);
-        wetGain.reset(spec.sampleRate, crossfadeLengthSeconds);
     }
 
     void setBypass(bool bypass) noexcept {
-        const auto current  = dryGain.getCurrentValue();
-        const auto target   = bypass ? 1.0f : 0.0f;
-        const auto duration = crossfadeLengthSeconds * std::abs(target - current);
-
-        dryGain.reset(sampleRateHz, duration);
-        wetGain.reset(sampleRateHz, duration);
-
-        dryGain.setCurrentAndTargetValue(current);
-        dryGain.setTargetValue(target);
-
-        wetGain.setCurrentAndTargetValue(1.0f - current);
-        wetGain.setTargetValue(1.0f - target);
+        crossfade.setTarget(bypass ? 1.0f : 0.0f);
     }
 
     void setBypassForced(bool bypass) noexcept {
-        dryGain.setCurrentAndTargetValue(bypass ? 1.0f : 0.0f);
-        wetGain.setCurrentAndTargetValue(1.0f - dryGain.getTargetValue());
+        crossfade.snapTo(bypass ? 1.0f : 0.0f);
     }
 
     [[nodiscard]] bool isTransitioning() const noexcept {
-        return dryGain.isSmoothing() || wetGain.isSmoothing();
+        return crossfade.isTransitioning();
     }
 
     void setDryBuffer(const juce::AudioBuffer<float>& buffer) noexcept {
@@ -98,16 +88,23 @@ class BypassTransitionSmoother {
         for (const auto channel : std::views::iota(0, buffer.getNumChannels())) {
             dryBuffer.copyFrom(channel, 0, buffer, channel, 0, buffer.getNumSamples());
         }
-        dryGain.applyGain(dryBuffer, buffer.getNumSamples());
     }
 
-    void mixToWetBuffer(juce::AudioBuffer<float>& buffer) noexcept {
-        jassert(buffer.getNumSamples() <= dryBuffer.getNumSamples());
-        jassert(buffer.getNumChannels() <= dryBuffer.getNumChannels());
+    void mixToWetBuffer(juce::AudioBuffer<float>& wetBuffer) noexcept {
+        jassert(wetBuffer.getNumSamples() <= dryBuffer.getNumSamples());
+        jassert(wetBuffer.getNumChannels() <= dryBuffer.getNumChannels());
 
-        wetGain.applyGain(buffer, buffer.getNumSamples());
-        for (const auto channel : std::views::iota(0, buffer.getNumChannels())) {
-            buffer.addFrom(channel, 0, dryBuffer, channel, 0, buffer.getNumSamples());
+        for (const auto frameIndex : std::views::iota(0, wetBuffer.getNumSamples())) {
+            const auto crossFadePosition = crossfade.getNextPosition();
+            const auto wetGain           = 1.0f - crossFadePosition;
+            const auto dryGain           = crossFadePosition;
+
+            for (const auto channel : std::views::iota(0, wetBuffer.getNumChannels())) {
+                const auto wetSample   = wetBuffer.getSample(channel, frameIndex);
+                const auto drySample   = dryBuffer.getSample(channel, frameIndex);
+                const auto mixedSample = wetGain * wetSample + dryGain * drySample;
+                wetBuffer.setSample(channel, frameIndex, mixedSample);
+            }
         }
     }
 
@@ -117,10 +114,7 @@ class BypassTransitionSmoother {
     }
 
   private:
-    double crossfadeLengthSeconds = 0.0;
-    double sampleRateHz           = 0.0;
-    juce::LinearSmoothedValue<float> dryGain {0.f};
-    juce::LinearSmoothedValue<float> wetGain {1.f};
+    CrossfadePosition crossfade;
     juce::AudioBuffer<float> dryBuffer;
 };
 }  // namespace tremolo

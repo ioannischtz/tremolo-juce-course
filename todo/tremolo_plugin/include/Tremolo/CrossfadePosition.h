@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <limits>
 
 namespace tremolo {
 /**
@@ -124,7 +125,11 @@ class CrossfadePosition {
             position.setCurrentAndTargetValue(newTarget);
         } else {
             // Steps needed to reach distance
-            const auto numSteps = static_cast<int>(std::ceil(distance * lengthSamples));
+            const auto exactSteps = distance * lengthSamples;
+            // had to add the tolerance, because TogglingBypassMidOnOffTransitionIsSmooth was failing
+            const auto tolerance = static_cast<double>(std::numeric_limits<float>::epsilon()) * lengthSamples;
+            const auto numSteps  = static_cast<int>(std::ceil(exactSteps - tolerance));
+
             // Reset the ramp length for the next target
             position.reset(numSteps);
             // Restore current position, because reset(numSteps) also does setCurrentAndTargetValue(oldTarget)
