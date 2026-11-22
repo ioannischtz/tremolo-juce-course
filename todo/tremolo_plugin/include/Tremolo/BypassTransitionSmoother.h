@@ -2,7 +2,7 @@
 
 #include <ranges>
 #include "juce_dsp/juce_dsp.h"
-#include "tremolo_plugin/include/Tremolo/CrossfadePosition.h"
+#include "tremolo_plugin/include/Tremolo/Crossfade.h"
 
 namespace tremolo {
 /**
@@ -58,6 +58,9 @@ namespace tremolo {
  * releaseResources().
  */
 class BypassTransitionSmoother {
+  static constexpr Crossfade::Side wet = Crossfade::Side::A;
+  static constexpr Crossfade::Side dry = Crossfade::Side::B;
+
   public:
     explicit BypassTransitionSmoother(double crossfadeLengthSecondsValue = 0.01)
         : crossfade {crossfadeLengthSecondsValue} {
@@ -70,15 +73,15 @@ class BypassTransitionSmoother {
     }
 
     void setBypass(bool bypass) noexcept {
-        crossfade.setTarget(bypass ? 1.0f : 0.0f);
+        crossfade.fadeTo(bypass ? dry : wet);
     }
 
     void setBypassForced(bool bypass) noexcept {
-        crossfade.snapTo(bypass ? 1.0f : 0.0f);
+        crossfade.snapTo(bypass ? dry : wet);
     }
 
     [[nodiscard]] bool isTransitioning() const noexcept {
-        return crossfade.isTransitioning();
+        return crossfade.isFading();
     }
 
     void setDryBuffer(const juce::AudioBuffer<float>& buffer) noexcept {
@@ -94,16 +97,16 @@ class BypassTransitionSmoother {
         jassert(wetBuffer.getNumSamples() <= dryBuffer.getNumSamples());
         jassert(wetBuffer.getNumChannels() <= dryBuffer.getNumChannels());
 
-        for (const auto frameIndex : std::views::iota(0, wetBuffer.getNumSamples())) {
-            const auto crossFadePosition = crossfade.getNextPosition();
-            const auto wetGain           = 1.0f - crossFadePosition;
-            const auto dryGain           = crossFadePosition;
+        for (const auto sampleIndex: std::views::iota(0, wetBuffer.getNumSamples())) {
+            const auto crossFadeMix= crossfade.getNextMix();
+            const auto wetGain           = crossFadeMix.get(wet);
+            const auto dryGain           = crossFadeMix.get(dry);
 
             for (const auto channel : std::views::iota(0, wetBuffer.getNumChannels())) {
-                const auto wetSample   = wetBuffer.getSample(channel, frameIndex);
-                const auto drySample   = dryBuffer.getSample(channel, frameIndex);
-                const auto mixedSample = wetGain * wetSample + dryGain * drySample;
-                wetBuffer.setSample(channel, frameIndex, mixedSample);
+                const auto wetSample   = wetBuffer.getSample(channel, sampleIndex);
+                const auto drySample   = dryBuffer.getSample(channel, sampleIndex);
+                const auto mixedSample = (wetGain * wetSample) + (dryGain * drySample);
+                wetBuffer.setSample(channel, sampleIndex, mixedSample);
             }
         }
     }
@@ -114,7 +117,7 @@ class BypassTransitionSmoother {
     }
 
   private:
-    CrossfadePosition crossfade;
+    Crossfade crossfade {0.01, wet};
     juce::AudioBuffer<float> dryBuffer;
 };
 }  // namespace tremolo
