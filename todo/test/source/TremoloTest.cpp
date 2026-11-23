@@ -5,6 +5,9 @@
 #include <wolfsound/file/wolfsound_WavFileWriter.hpp>
 #include <wolfsound/dsp/wolfsound_testSignals.hpp>
 
+#include <cmath>
+#include <limits>
+
 namespace tremolo {
 namespace {
 void extractLfo(Tremolo& tremolo, juce::AudioBuffer<float>& bufferToUse) {
@@ -26,10 +29,10 @@ void extractLfo(Tremolo& tremolo, juce::AudioBuffer<float>& bufferToUse) {
  */
 TEST(Tremolo, ExtractLfo) {
   for (const auto lfoWaveform :
-       {Tremolo::LfoWaveform::sine, Tremolo::LfoWaveform::triangle}) {
+       {Tremolo::LfoWaveformShape::sine, Tremolo::LfoWaveformShape::triangle}) {
     Tremolo testee;
     constexpr auto sampleRate = 48000.0;
-    testee.selectLfoWaveform(lfoWaveform);
+    testee.selectLfoWaveformShape(lfoWaveform);
     testee.prepare(sampleRate, static_cast<int>(sampleRate));
 
     juce::AudioBuffer<float> buffer;
@@ -37,7 +40,7 @@ TEST(Tremolo, ExtractLfo) {
 
     extractLfo(testee, buffer);
 
-    const auto* const fileName = lfoWaveform == Tremolo::LfoWaveform::sine
+    const auto* const fileName = lfoWaveform == Tremolo::LfoWaveformShape::sine
                                      ? "sineLfo.wav"
                                      : "triangleLfo.wav";
 
@@ -74,10 +77,10 @@ TEST(Tremolo, LfoWaveformTransitionIsSmooth) {
   juce::AudioBuffer<float> processBuffer;
   processBuffer.setSize(channelCount, blockSizeSamples);
 
-  testee.selectLfoWaveform(Tremolo::LfoWaveform::sine);
+  testee.selectLfoWaveformShape(Tremolo::LfoWaveformShape::sine);
   extractLfo(testee, processBuffer);
   outputBuffer.copyFrom(0, 0, processBuffer, 0, 0, blockSizeSamples);
-  testee.selectLfoWaveform(Tremolo::LfoWaveform::triangle);
+  testee.selectLfoWaveformShape(Tremolo::LfoWaveformShape::triangle);
   extractLfo(testee, processBuffer);
   outputBuffer.copyFrom(0, blockSizeSamples, processBuffer, 0, 0,
                         blockSizeSamples);
@@ -87,5 +90,37 @@ TEST(Tremolo, LfoWaveformTransitionIsSmooth) {
       juce::Span{outputBuffer.getReadPointer(0),
                  static_cast<size_t>(outputBuffer.getNumSamples())},
       wolfsound::Frequency{sampleRate});
+}
+
+TEST(Tremolo, SnapToTargetsAppliesLatestShape) {
+  Tremolo testee;
+  constexpr auto sampleRate = 8.0;
+  constexpr auto tolerance = std::numeric_limits<float>::epsilon() * 32.0f;
+
+  testee.setModulationRate(1.0f);
+  testee.prepare(sampleRate, 2);
+
+  juce::AudioBuffer<float> firstBuffer {1, 1};
+  firstBuffer.clear();
+  firstBuffer.setSample(0, 0, 1.0f);
+  testee.process(firstBuffer);
+
+  testee.selectLfoWaveformShape(Tremolo::LfoWaveformShape::softSquare);
+  testee.snapToTargets();
+
+  juce::AudioBuffer<float> secondBuffer {1, 1};
+  secondBuffer.clear();
+  secondBuffer.setSample(0, 0, 1.0f);
+  testee.process(secondBuffer);
+
+  const auto expectedGain = [](float lfoValue) {
+    constexpr auto modulationDepth = 0.4f;
+    return (1.0f - modulationDepth) +
+           (((lfoValue + 1.0f) * 0.5f) * modulationDepth);
+  };
+
+  EXPECT_NEAR(expectedGain(std::tanh(3.0f * std::sqrt(0.5f))),
+              secondBuffer.getSample(0, 0),
+              tolerance);
 }
 }  // namespace tremolo
