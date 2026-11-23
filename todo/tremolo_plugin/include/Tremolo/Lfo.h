@@ -63,8 +63,7 @@ class Lfo {
         jassert(sampleRateHzArg > 0.0);
         sampleRateHz = static_cast<float>(sampleRateHzArg);
         phase.reset();
-        // TODO magic number 50ms
-        rateHz.reset(sampleRateHz, 0.05);
+        rateHz.reset(sampleRateHz, rateSmoothingSeconds);
         waveformSwitcher.prepare(sampleRateHz);
     }
 
@@ -106,6 +105,8 @@ class Lfo {
     }
 
   private:
+    static constexpr double rateSmoothingSeconds = 0.05;
+
     // ========
     // State
     // ========

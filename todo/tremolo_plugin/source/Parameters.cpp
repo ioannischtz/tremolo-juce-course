@@ -25,17 +25,24 @@ namespace {
         return addParameterToProcessor(processor, std::move(parameter));
     }
 
-    juce::AudioParameterFloat& createGainParameter(juce::AudioProcessor& processor, const bool isIn) {
+    juce::AudioParameterFloat&
+    createGainParameter(juce::AudioProcessor& processor, const char* parameterIDstr, const char* parameterName) {
         constexpr auto versionHint = 1;
-        const auto* parameterID    = isIn ? "gain.in" : "gain.out";
-        const auto* parameterName  = isIn ? "Input Gain" : "Output Gain";
         auto parameter =
-            std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {parameterID, versionHint},
+            std::make_unique<juce::AudioParameterFloat>(juce::ParameterID {parameterIDstr, versionHint},
                                                         parameterName,
                                                         juce::NormalisableRange {-12.f, 12.f, 0.1f, 1.f},
                                                         0.f,
                                                         juce::AudioParameterFloatAttributes {}.withLabel("dB"));
         return addParameterToProcessor(processor, std::move(parameter));
+    }
+
+    juce::AudioParameterFloat& createInputGainParameter(juce::AudioProcessor& processor) {
+        return createGainParameter(processor, "gain.in", "Input Gain");
+    }
+
+    juce::AudioParameterFloat& createOutputGainParameter(juce::AudioProcessor& processor) {
+        return createGainParameter(processor, "gain.out", "Output Gain");
     }
 
     juce::AudioParameterBool& createIsBypassedParameter(juce::AudioProcessor& processor) {
@@ -63,12 +70,9 @@ namespace {
 }  // namespace
 
 Parameters::Parameters(juce::AudioProcessor& processor)
-    // TODO: create parameters
-    // TODO: retrieve references to parameters
-    // TODO: add parameters to the processor
     : rateHz {createModulationRateParameter(processor)},
-      inputGainDB {createGainParameter(processor, true)},
-      outputGainDB {createGainParameter(processor, false)},
+      inputGainDB {createInputGainParameter(processor)},
+      outputGainDB {createOutputGainParameter(processor)},
       isBypassed(createIsBypassedParameter(processor)),
       waveformShape(createWaveformShapeParameter(processor)) {}
 }  // namespace tremolo

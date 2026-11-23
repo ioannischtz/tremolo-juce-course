@@ -14,7 +14,7 @@ class Tremolo {
 
     // TODO Magic numbers
     Tremolo()
-        : lfo {0.020f, LfoWaveformShape::sine, 5.0f} {}
+        : lfo {waveformFadeSeconds, defaultWaveformShape, defaultRateHz} {}
 
     // ========
     // Public Methods
@@ -54,10 +54,8 @@ class Tremolo {
         applyRequests();
 
         for (const auto sampleIndex : std::views::iota(0, buffer.getNumSamples())) {
-            const auto lfoValue = lfo.getNextValue();
-            constexpr auto modulationDepth = 0.4f;
-            const auto modulationValue =
-                (1.0f - modulationDepth) + (((lfoValue + 1.0f) * 0.5f) * modulationDepth);
+            const auto lfoValue        = lfo.getNextValue();
+            const auto modulationValue = (1.0f - modulationDepth) + (((lfoValue + 1.0f) * 0.5f) * modulationDepth);
 
             for (const auto channelIndex : std::views::iota(0, buffer.getNumChannels())) {
                 const auto inputSample = buffer.getSample(channelIndex, sampleIndex);
@@ -86,15 +84,19 @@ class Tremolo {
         }
     }
 
+    // constants
+    static constexpr auto waveformFadeSeconds  = 0.02f;
+    static constexpr auto defaultRateHz        = 5.0f;
+    static constexpr auto defaultWaveformShape = LfoWaveformShape::sine;
+    static constexpr auto modulationDepth      = 0.4f;
+
     // ========
     // State
     // ========
-
     Lfo lfo;
-    // TODO magic number
-    std::atomic<float> requestedRateHz {5.0f};
-    float appliedRateHz = 5.0f;
-    std::atomic<LfoWaveformShape> requestedWaveformShape;
-    LfoWaveformShape appliedWaveformShape = LfoWaveformShape::sine;
+    std::atomic<float> requestedRateHz {defaultRateHz};
+    float appliedRateHz = defaultRateHz;
+    std::atomic<LfoWaveformShape> requestedWaveformShape {defaultWaveformShape};
+    LfoWaveformShape appliedWaveformShape = defaultWaveformShape;
 };
 }  // namespace tremolo
