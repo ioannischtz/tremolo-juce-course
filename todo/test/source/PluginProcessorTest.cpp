@@ -5,6 +5,6 @@ namespace tremolo {
 /** This test doesn't test anything but shows that you can instantiate and use a
  * plugin processor in test */
 TEST(PluginProcessor, PlaceholderTest) {
-  PluginProcessor processor{};
+    PluginProcessor processor {};
 }
 }  // namespace tremolo
