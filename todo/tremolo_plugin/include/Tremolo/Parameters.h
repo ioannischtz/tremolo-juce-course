@@ -11,6 +11,7 @@ struct Parameters {
     juce::AudioParameterFloat& inputGainDB;
     juce::AudioParameterFloat& outputGainDB;
     juce::AudioParameterBool& isBypassed;
+    juce::AudioParameterChoice& waveformShape;
 
     JUCE_DECLARE_NON_COPYABLE(Parameters)
     JUCE_DECLARE_NON_MOVEABLE(Parameters)

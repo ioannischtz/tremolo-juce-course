@@ -108,6 +108,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
 
     inputGain.setTargetGainDB(parameters.inputGainDB.get());
     tremolo.setModulationRate(parameters.rateHz.get());
+    tremolo.selectLfoWaveformShape(static_cast<Tremolo::LfoWaveformShape>(parameters.waveformShape.getIndex()));
     outputGain.setTargetGainDB(parameters.outputGainDB.get());
 
     /**
@@ -123,6 +124,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
 
     // case 1
     if (isBypassed && !isTransitioning) {
+        tremolo.snapToTargets();
         return;
     }
 

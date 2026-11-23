@@ -25,7 +25,7 @@ namespace {
         return addParameterToProcessor(processor, std::move(parameter));
     }
 
-    juce::AudioParameterFloat& createGainParameter(juce::AudioProcessor& processor, bool isIn) {
+    juce::AudioParameterFloat& createGainParameter(juce::AudioProcessor& processor, const bool isIn) {
         constexpr auto versionHint = 1;
         const auto* parameterID    = isIn ? "gain.in" : "gain.out";
         const auto* parameterName  = isIn ? "Input Gain" : "Output Gain";
@@ -50,6 +50,16 @@ namespace {
         return addParameterToProcessor(processor, std::move(parameter));
     }
 
+    juce::AudioParameterChoice& createWaveformShapeParameter(juce::AudioProcessor& processor) {
+        constexpr auto versionHint = 1;
+        auto parameter =
+            std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"modulation.waveform", versionHint},
+                                                         "Waveform shape",
+                                                         juce::StringArray {"Sine", "Triangle", "Soft Square"},
+                                                         0);
+        return addParameterToProcessor(processor, std::move(parameter));
+    }
+
 }  // namespace
 
 Parameters::Parameters(juce::AudioProcessor& processor)
@@ -59,5 +69,6 @@ Parameters::Parameters(juce::AudioProcessor& processor)
     : rateHz {createModulationRateParameter(processor)},
       inputGainDB {createGainParameter(processor, true)},
       outputGainDB {createGainParameter(processor, false)},
-      isBypassed(createIsBypassedParameter(processor)) {}
+      isBypassed(createIsBypassedParameter(processor)),
+      waveformShape(createWaveformShapeParameter(processor)) {}
 }  // namespace tremolo
