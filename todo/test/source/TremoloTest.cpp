@@ -6,14 +6,23 @@
 #include <wolfsound/dsp/wolfsound_testSignals.hpp>
 
 #include <cmath>
+#include <cstdint>
 #include <limits>
 
 namespace tremolo {
 namespace {
+    juce::dsp::ProcessSpec makeProcessSpec(double sampleRate, int maximumBlockSize, int numChannels = 1) {
+        return {
+            .sampleRate       = sampleRate,
+            .maximumBlockSize = static_cast<uint32_t>(maximumBlockSize),
+            .numChannels      = static_cast<uint32_t>(numChannels),
+        };
+    }
+
     void extractLfo(Tremolo& tremolo, juce::AudioBuffer<float>& bufferToUse) {
         juce::dsp::AudioBlock<float> block {bufferToUse};
         block.fill(1.f);
-        tremolo.process(bufferToUse);
+        tremolo.process(block);
         block.subtract(1.f);
     }
 }  // namespace
@@ -32,7 +41,7 @@ TEST(Tremolo, ExtractLfo) {
         Tremolo testee;
         constexpr auto sampleRate = 48000.0;
         testee.selectLfoWaveformShape(lfoWaveform);
-        testee.prepare(sampleRate, static_cast<int>(sampleRate));
+        testee.prepare(makeProcessSpec(sampleRate, static_cast<int>(sampleRate)));
 
         juce::AudioBuffer<float> buffer;
         buffer.setSize(1, static_cast<int>(sampleRate));
@@ -63,7 +72,7 @@ TEST(Tremolo, LfoWaveformTransitionIsSmooth) {
     constexpr auto channelCount     = 1;
     constexpr auto blockSizeSeconds = 1;
     constexpr auto blockSizeSamples = static_cast<int>(blockSizeSeconds * sampleRate);
-    testee.prepare(sampleRate, blockSizeSamples);
+    testee.prepare(makeProcessSpec(sampleRate, blockSizeSamples));
 
     juce::AudioBuffer<float> outputBuffer;
     constexpr auto recordingLengthSamples = 2 * blockSizeSamples;
@@ -91,12 +100,13 @@ TEST(Tremolo, SnapToTargetsAppliesLatestShape) {
     constexpr auto tolerance  = std::numeric_limits<float>::epsilon() * 32.0f;
 
     testee.setModulationRate(1.0f);
-    testee.prepare(sampleRate, 2);
+    testee.prepare(makeProcessSpec(sampleRate, 2));
 
     juce::AudioBuffer<float> firstBuffer {1, 1};
     firstBuffer.clear();
     firstBuffer.setSample(0, 0, 1.0f);
-    testee.process(firstBuffer);
+    juce::dsp::AudioBlock<float> firstBlock {firstBuffer};
+    testee.process(firstBlock);
 
     testee.selectLfoWaveformShape(Tremolo::LfoWaveformShape::softSquare);
     testee.snapToTargets();
@@ -104,7 +114,8 @@ TEST(Tremolo, SnapToTargetsAppliesLatestShape) {
     juce::AudioBuffer<float> secondBuffer {1, 1};
     secondBuffer.clear();
     secondBuffer.setSample(0, 0, 1.0f);
-    testee.process(secondBuffer);
+    juce::dsp::AudioBlock<float> secondBlock {secondBuffer};
+    testee.process(secondBlock);
 
     const auto expectedGain = [](float lfoValue) {
         constexpr auto modulationDepth = 0.4f;

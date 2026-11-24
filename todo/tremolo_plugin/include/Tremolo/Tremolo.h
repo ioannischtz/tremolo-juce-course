@@ -12,7 +12,6 @@ class Tremolo {
   public:
     using LfoWaveformShape = tremolo::LfoWaveformShape;
 
-    // TODO Magic numbers
     Tremolo()
         : lfo {waveformFadeSeconds, defaultWaveformShape, defaultRateHz} {}
 
@@ -20,9 +19,9 @@ class Tremolo {
     // Public Methods
     // ========
 
-    void prepare(const double sampleRateHz, int expectedMaxFramesPerBlock) {
-        juce::ignoreUnused(expectedMaxFramesPerBlock);
-        lfo.prepare(sampleRateHz);
+    void prepare(const juce::dsp::ProcessSpec& spec) {
+        juce::ignoreUnused(spec.maximumBlockSize);
+        lfo.prepare(spec.sampleRate);
         snapToTargets();
     }
 
@@ -50,16 +49,21 @@ class Tremolo {
         appliedRateHz = requestedRate;
     }
 
-    void process(juce::AudioBuffer<float>& buffer) noexcept {
+    // Overload for ProcessorChain.process
+    void process(const juce::dsp::ProcessContextReplacing<float>& context) noexcept {
+        process(context.getOutputBlock());
+    }
+
+    void process(const juce::dsp::AudioBlock<float>& block) noexcept {
         applyRequests();
 
-        for (const auto sampleIndex : std::views::iota(0, buffer.getNumSamples())) {
+        for (const auto sampleIndex : std::views::iota(0, static_cast<int>(block.getNumSamples()))) {
             const auto lfoValue        = lfo.getNextValue();
             const auto modulationValue = (1.0f - modulationDepth) + (((lfoValue + 1.0f) * 0.5f) * modulationDepth);
 
-            for (const auto channelIndex : std::views::iota(0, buffer.getNumChannels())) {
-                const auto inputSample = buffer.getSample(channelIndex, sampleIndex);
-                buffer.setSample(channelIndex, sampleIndex, inputSample * modulationValue);
+            for (const auto channelIndex : std::views::iota(0, static_cast<int>(block.getNumChannels()))) {
+                const auto inputSample = block.getSample(channelIndex, sampleIndex);
+                block.setSample(channelIndex, sampleIndex, inputSample * modulationValue);
             }
         }
     }

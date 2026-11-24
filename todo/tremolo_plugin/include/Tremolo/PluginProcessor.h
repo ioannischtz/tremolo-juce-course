@@ -9,6 +9,12 @@ class PluginProcessor: public juce::AudioProcessor {
   public:
     PluginProcessor();
 
+    enum class ProcessorIndex : int {
+        inputGainIndex = 0,
+        tremoloIndex,
+        outputGainIndex,
+    };
+
     void prepareToPlay(double sampleRate, int expectedMaxFramesPerBlock) override;
 
     void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
@@ -41,9 +47,8 @@ class PluginProcessor: public juce::AudioProcessor {
 
   private:
     Parameters parameters {*this};
-    Tremolo tremolo;
-    Gain inputGain;
-    Gain outputGain;
+
+    juce::dsp::ProcessorChain<Gain, Tremolo, Gain> processorChain;
     BypassTransitionSmoother bypassTransitionSmoother;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginProcessor)

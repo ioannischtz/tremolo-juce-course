@@ -7,8 +7,8 @@ class Gain {
   public:
     Gain() = default;
 
-    void prepare(double sampleRate) {
-        targetGainDB.reset(sampleRate, 0.020f);
+    void prepare(const juce::dsp::ProcessSpec& spec) {
+        targetGainDB.reset(spec.sampleRate, 0.020f);
         targetGainDB.setCurrentAndTargetValue(0.f);
     }
 
@@ -16,14 +16,19 @@ class Gain {
         targetGainDB.setTargetValue(gainDB);
     }
 
-    void process(juce::AudioBuffer<float>& buffer) noexcept {
+    // Overload for ProcessorChain.process
+    void process(const juce::dsp::ProcessContextReplacing<float>& context) noexcept {
+        process(context.getOutputBlock());
+    }
+
+    void process(const juce::dsp::AudioBlock<float>& block) noexcept {
         // for each frame
-        for (const auto frameIndex : std::views::iota(0, buffer.getNumSamples())) {
-            auto gain = juce::Decibels::decibelsToGain(targetGainDB.getNextValue());
-            for (const auto channelIndex : std::views::iota(0, buffer.getNumChannels())) {
-                const auto inputSample  = buffer.getSample(channelIndex, frameIndex);
+        for (const auto sampleIndex : std::views::iota(0, static_cast<int>(block.getNumSamples()))) {
+            const auto gain = juce::Decibels::decibelsToGain(targetGainDB.getNextValue());
+            for (const auto channelIndex : std::views::iota(0, static_cast<int>(block.getNumChannels()))) {
+                const auto inputSample  = block.getSample(channelIndex, sampleIndex);
                 const auto outputSample = inputSample * gain;
-                buffer.setSample(channelIndex, frameIndex, outputSample);
+                block.setSample(channelIndex, sampleIndex, outputSample);
             }
         }
     }

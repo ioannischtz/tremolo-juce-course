@@ -51,23 +51,19 @@ void PluginProcessor::changeProgramName(int index, const juce::String& newName) 
 }
 
 void PluginProcessor::prepareToPlay(double sampleRate, int expectedMaxFramesPerBlock) {
-    // Use this method as the place to do any pre-playback
-    // initialization that you need, e.g., allocate memory.
-    inputGain.prepare(sampleRate);
-    tremolo.prepare(sampleRate, expectedMaxFramesPerBlock);
-    outputGain.prepare(sampleRate);
-    bypassTransitionSmoother.prepare(
-        {.sampleRate       = sampleRate,
-         .maximumBlockSize = static_cast<uint32_t>(expectedMaxFramesPerBlock),
-         .numChannels = static_cast<uint32_t>(juce::jmax(getTotalNumInputChannels(), getTotalNumOutputChannels()))});
+    const auto spec = juce::dsp::ProcessSpec {
+        .sampleRate       = sampleRate,
+        .maximumBlockSize = static_cast<uint32_t>(expectedMaxFramesPerBlock),
+        .numChannels      = static_cast<uint32_t>(juce::jmax(getTotalNumInputChannels(), getTotalNumOutputChannels())),
+    };
+    processorChain.prepare(spec);
+    bypassTransitionSmoother.prepare(spec);
 }
 
 void PluginProcessor::releaseResources() {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
-    inputGain.reset();
-    tremolo.reset();
-    outputGain.reset();
+    processorChain.reset();
     bypassTransitionSmoother.reset();
 }
 
@@ -106,6 +102,10 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
         buffer.clear(channelToClear, 0, buffer.getNumSamples());
     }
 
+    auto& inputGain  = processorChain.template get<juce::toUnderlyingType(ProcessorIndex::inputGainIndex)>();
+    auto& tremolo    = processorChain.template get<juce::toUnderlyingType(ProcessorIndex::tremoloIndex)>();
+    auto& outputGain = processorChain.template get<juce::toUnderlyingType(ProcessorIndex::outputGainIndex)>();
+
     inputGain.setTargetGainDB(parameters.inputGainDB.get());
     tremolo.setModulationRate(parameters.rateHz.get());
     tremolo.selectLfoWaveformShape(static_cast<Tremolo::LfoWaveformShape>(parameters.waveformShape.getIndex()));
@@ -133,10 +133,11 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
         bypassTransitionSmoother.setDryBuffer(buffer);
     }
 
+    auto block          = juce::dsp::AudioBlock<float> {buffer};
+    const auto& context = juce::dsp::ProcessContextReplacing<float> {block};
+
     // process wet
-    inputGain.process(buffer);
-    tremolo.process(buffer);
-    outputGain.process(buffer);
+    processorChain.process(context);
     // now fully wet
     // mix if transitioning
     if (isTransitioning) {
