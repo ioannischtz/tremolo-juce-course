@@ -8,6 +8,7 @@ struct Parameters {
     explicit Parameters(juce::AudioProcessor&);
 
     juce::AudioParameterFloat& rateHz;
+    juce::AudioParameterFloat& modulationDepth;
     juce::AudioParameterFloat& inputGainDB;
     juce::AudioParameterFloat& outputGainDB;
     juce::AudioParameterBool& isBypassed;

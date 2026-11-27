@@ -108,6 +108,7 @@ void PluginProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::MidiB
 
     inputGain.setTargetGainDB(parameters.inputGainDB.get());
     tremolo.setModulationRate(parameters.rateHz.get());
+    tremolo.setModulationDepth(parameters.modulationDepth.get());
     tremolo.selectLfoWaveformShape(static_cast<Tremolo::LfoWaveformShape>(parameters.waveformShape.getIndex()));
     outputGain.setTargetGainDB(parameters.outputGainDB.get());
 
@@ -175,6 +176,7 @@ void PluginProcessor::setStateInformation(const void* data, int sizeInBytes) {
 
     inputGain.setTargetGainDbForced(parameters.inputGainDB.get());
     tremolo.setModulationRate(parameters.rateHz.get());
+    tremolo.setModulationDepth(parameters.modulationDepth.get());
     tremolo.selectLfoWaveformShape(static_cast<Tremolo::LfoWaveformShape>(parameters.waveformShape.getIndex()));
     tremolo.snapToTargets();
     outputGain.setTargetGainDbForced(parameters.outputGainDB.get());

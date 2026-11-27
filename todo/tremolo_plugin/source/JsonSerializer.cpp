@@ -2,6 +2,7 @@ namespace tremolo {
 namespace {
     struct SerializableParameters {
         float rateHz;
+        float modulationDepth;
         float inputGainDB;
         float outputGainDB;
         bool isBypassed;
@@ -26,6 +27,7 @@ namespace {
             }
 
             archive(named("modulationRateHz", t.rateHz),
+                    named("modulationDepth", t.modulationDepth),
                     named("inputGainDB", t.inputGainDB),
                     named("outputGainDB", t.outputGainDB),
                     named("bypassed", t.isBypassed),
@@ -35,11 +37,12 @@ namespace {
 
     SerializableParameters from(const tremolo::Parameters& parameters) {
         return {
-            .rateHz        = parameters.rateHz.get(),
-            .inputGainDB   = parameters.inputGainDB.get(),
-            .outputGainDB  = parameters.outputGainDB.get(),
-            .isBypassed    = parameters.isBypassed.get(),
-            .waveformShape = parameters.waveformShape.getCurrentChoiceName(),
+            .rateHz          = parameters.rateHz.get(),
+            .modulationDepth = parameters.modulationDepth.get(),
+            .inputGainDB     = parameters.inputGainDB.get(),
+            .outputGainDB    = parameters.outputGainDB.get(),
+            .isBypassed      = parameters.isBypassed.get(),
+            .waveformShape   = parameters.waveformShape.getCurrentChoiceName(),
         };
     }
 }  // namespace
@@ -78,10 +81,11 @@ juce::Result JsonSerializer::deserialize(juce::InputStream& input, const Paramet
     }
     parameters.waveformShape = modulationWaveformIndex;
 
-    parameters.rateHz       = parsedParameters->rateHz;
-    parameters.inputGainDB  = parsedParameters->inputGainDB;
-    parameters.outputGainDB = parsedParameters->outputGainDB;
-    parameters.isBypassed   = parsedParameters->isBypassed;
+    parameters.rateHz          = parsedParameters->rateHz;
+    parameters.modulationDepth = parsedParameters->modulationDepth;
+    parameters.inputGainDB     = parsedParameters->inputGainDB;
+    parameters.outputGainDB    = parsedParameters->outputGainDB;
+    parameters.isBypassed      = parsedParameters->isBypassed;
 
     return juce::Result::ok();
 }

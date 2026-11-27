@@ -6,16 +6,18 @@ TEST(JsonSerializer, SerializeToString) {
     PluginProcessor processor;
     auto& parameters = processor.getParameterRefs();
 
-    parameters.rateHz        = 10.f;
-    parameters.inputGainDB   = 3.0f;
-    parameters.outputGainDB  = 3.0f;
-    parameters.isBypassed    = true;
-    parameters.waveformShape = 1;
+    parameters.rateHz          = 10.f;
+    parameters.modulationDepth = 0.5f;
+    parameters.inputGainDB     = 3.0f;
+    parameters.outputGainDB    = 3.0f;
+    parameters.isBypassed      = true;
+    parameters.waveformShape   = 1;
 
     const juce::String expectedOutput = u8R"({
   "__version__": 1,
   "pluginName": "TremoloTodo",
   "modulationRateHz": 10.0,
+  "modulationDepth": 0.5,
   "inputGainDB": 3.0,
   "outputGainDB": 3.0,
   "bypassed": true,
@@ -37,6 +39,7 @@ TEST(JsonSerializer, DeserializeFromString) {
   "__version__": 1,
   "pluginName": "TremoloTodo",
   "modulationRateHz": 10.0,
+  "modulationDepth": 0.5,
   "inputGainDB": 3.0,
   "outputGainDB": 3.0,
   "bypassed": true,
@@ -53,6 +56,7 @@ TEST(JsonSerializer, DeserializeFromString) {
 
     EXPECT_TRUE(result.wasOk());
     EXPECT_FLOAT_EQ(parameters.rateHz, 10.f);
+    EXPECT_FLOAT_EQ(parameters.modulationDepth, 0.5f);
     EXPECT_FLOAT_EQ(parameters.inputGainDB, 3.f);
     EXPECT_FLOAT_EQ(parameters.outputGainDB, 3.f);
     EXPECT_TRUE(parameters.isBypassed);
@@ -65,6 +69,7 @@ TEST(JsonSerializer, DontUpdateParametersWhenWaveformNameIsInvalid) {
   "__version__": 1,
   "pluginName": "TremoloTodo",
   "modulationRateHz": 10.0,
+  "modulationDepth": 0.5,
   "inputGainDB": 0.0,
   "outputGainDB": 0.0,
   "bypassed": true,
@@ -77,11 +82,12 @@ TEST(JsonSerializer, DontUpdateParametersWhenWaveformNameIsInvalid) {
     PluginProcessor processor;
     auto& parameters = processor.getParameterRefs();
 
-    parameters.waveformShape = 0;
-    parameters.isBypassed    = false;
-    parameters.rateHz        = 5.f;
-    parameters.inputGainDB   = 0.0f;
-    parameters.outputGainDB  = 0.0f;
+    parameters.waveformShape   = 0;
+    parameters.isBypassed      = false;
+    parameters.rateHz          = 5.f;
+    parameters.modulationDepth = 0.5f;
+    parameters.inputGainDB     = 0.0f;
+    parameters.outputGainDB    = 0.0f;
 
     // when
     const auto result = JsonSerializer::deserialize(inputStream, parameters);
@@ -89,6 +95,7 @@ TEST(JsonSerializer, DontUpdateParametersWhenWaveformNameIsInvalid) {
     // then
     EXPECT_TRUE(result.failed());
     EXPECT_FLOAT_EQ(parameters.rateHz.get(), 5.f);
+    EXPECT_FLOAT_EQ(parameters.modulationDepth.get(), 0.5f);
     EXPECT_FLOAT_EQ(parameters.inputGainDB.get(), 0.f);
     EXPECT_FLOAT_EQ(parameters.outputGainDB.get(), 0.f);
     EXPECT_FLOAT_EQ(parameters.rateHz.get(), 5.f);
