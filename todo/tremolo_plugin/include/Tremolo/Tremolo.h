@@ -21,8 +21,7 @@ class Tremolo {
 
     void prepare(const juce::dsp::ProcessSpec& spec) {
         juce::ignoreUnused(spec.maximumBlockSize);
-        modulationDepth.reset(spec.sampleRate, 0.01f);
-        modulationDepth.setCurrentAndTargetValue(defaultModulationDepth);
+        modulationDepth.reset(spec.sampleRate, depthSmoothingSeconds);
         lfo.prepare(spec.sampleRate);
         snapToTargets();
     }
@@ -42,8 +41,8 @@ class Tremolo {
     }
 
     void setModulationDepth(const float depth) noexcept {
-        jassert(depth >= 0.0f);
-        modulationDepth.setTargetValue(depth);
+        jassert(depth >= 0.0f && depth <= 1.0f);
+        requestedModulationDepth.store(depth, std::memory_order_relaxed);
     }
 
     void snapToTargets() noexcept {
@@ -55,7 +54,9 @@ class Tremolo {
         lfo.setModulationRateImmediately(requestedRate);
         appliedRateHz = requestedRate;
 
-        modulationDepth.setCurrentAndTargetValue(modulationDepth.getTargetValue());
+        const auto requestedDepth = requestedModulationDepth.load(std::memory_order_relaxed);
+        modulationDepth.setCurrentAndTargetValue(requestedDepth);
+        appliedModulationDepth = requestedDepth;
     }
 
     // Overload for ProcessorChain.process
@@ -97,10 +98,17 @@ class Tremolo {
             lfo.setModulationRate(requestedRate);
             appliedRateHz = requestedRate;
         }
+
+        if (const auto requestedDepth = requestedModulationDepth.load(std::memory_order_relaxed);
+            !juce::approximatelyEqual(requestedDepth, appliedModulationDepth)) {
+            modulationDepth.setTargetValue(requestedDepth);
+            appliedModulationDepth = requestedDepth;
+        }
     }
 
     // constants
     static constexpr auto waveformFadeSeconds    = 0.02f;
+    static constexpr auto depthSmoothingSeconds  = 0.01;
     static constexpr auto defaultRateHz          = 5.0f;
     static constexpr auto defaultWaveformShape   = LfoWaveformShape::sine;
     static constexpr auto defaultModulationDepth = 0.4f;
@@ -110,6 +118,8 @@ class Tremolo {
     // ========
     Lfo lfo;
     juce::SmoothedValue<float> modulationDepth {defaultModulationDepth};
+    std::atomic<float> requestedModulationDepth {defaultModulationDepth};
+    float appliedModulationDepth = defaultModulationDepth;
     std::atomic<float> requestedRateHz {defaultRateHz};
     float appliedRateHz = defaultRateHz;
     std::atomic<LfoWaveformShape> requestedWaveformShape {defaultWaveformShape};

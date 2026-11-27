@@ -166,6 +166,7 @@ void PluginProcessor::setStateInformation(const void* data, int sizeInBytes) {
 
     if (result.failed()) {
         DBG(result.getErrorMessage());
+        return;
     }
 
     bypassTransitionSmoother.setBypassForced(parameters.isBypassed.get());

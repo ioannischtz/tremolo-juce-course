@@ -33,7 +33,7 @@ namespace {
                 versionHint,
             },
             "Modulation Depth",
-            juce::NormalisableRange {0.0f, 0.6f, 0.0001f, 1.0f},
+            juce::NormalisableRange {0.0f, 1.0f, 0.0001f, 1.0f},
             0.4f,
             juce::AudioParameterFloatAttributes {});
         return addParameterToProcessor(processor, std::move(parameter));
