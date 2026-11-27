@@ -7,6 +7,6 @@ class JsonSerializer {
 
     /** @return Error message on failure; empty string otherwise.
      *           In case of error, no parameters are updated. */
-    static juce::Result deserialize(juce::InputStream&, Parameters&);
+    static juce::Result deserialize(juce::InputStream&, const Parameters&);
 };
 }  // namespace tremolo

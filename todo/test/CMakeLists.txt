@@ -36,7 +36,7 @@ add_executable(TremoloCoursePluginTest
         source/BypassTransitionSmootherTest.cpp
         source/LfoTest.cpp
         source/PluginProcessorTest.cpp
-        # source/JsonSerializerTest.cpp
+        source/JsonSerializerTest.cpp
         source/TremoloTest.cpp
 )
 

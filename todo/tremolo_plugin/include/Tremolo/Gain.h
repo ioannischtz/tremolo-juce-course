@@ -16,6 +16,10 @@ class Gain {
         targetGainDB.setTargetValue(gainDB);
     }
 
+    void setTargetGainDbForced(float gainDB) {
+        targetGainDB.setCurrentAndTargetValue(gainDB);
+    }
+
     // Overload for ProcessorChain.process
     void process(const juce::dsp::ProcessContextReplacing<float>& context) noexcept {
         process(context.getOutputBlock());

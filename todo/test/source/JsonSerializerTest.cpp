@@ -6,14 +6,18 @@ TEST(JsonSerializer, SerializeToString) {
     PluginProcessor processor;
     auto& parameters = processor.getParameterRefs();
 
-    parameters.rate     = 10.f;
-    parameters.bypassed = true;
-    parameters.waveform = 1;
+    parameters.rateHz        = 10.f;
+    parameters.inputGainDB   = 3.0f;
+    parameters.outputGainDB  = 3.0f;
+    parameters.isBypassed    = true;
+    parameters.waveformShape = 1;
 
     const juce::String expectedOutput = u8R"({
   "__version__": 1,
-  "pluginName": "Tremolo",
+  "pluginName": "TremoloTodo",
   "modulationRateHz": 10.0,
+  "inputGainDB": 3.0,
+  "outputGainDB": 3.0,
   "bypassed": true,
   "modulationWaveform": "Triangle"
 })";
@@ -31,8 +35,10 @@ TEST(JsonSerializer, SerializeToString) {
 TEST(JsonSerializer, DeserializeFromString) {
     const juce::String savedParameters = u8R"({
   "__version__": 1,
-  "pluginName": "Tremolo",
+  "pluginName": "TremoloTodo",
   "modulationRateHz": 10.0,
+  "inputGainDB": 3.0,
+  "outputGainDB": 3.0,
   "bypassed": true,
   "modulationWaveform": "Triangle"
 })";
@@ -46,17 +52,21 @@ TEST(JsonSerializer, DeserializeFromString) {
     const auto result = JsonSerializer::deserialize(inputStream, parameters);
 
     EXPECT_TRUE(result.wasOk());
-    EXPECT_FLOAT_EQ(parameters.rate, 10.f);
-    EXPECT_TRUE(parameters.bypassed);
-    EXPECT_EQ(juce::String {"Triangle"}, parameters.waveform.getCurrentChoiceName());
+    EXPECT_FLOAT_EQ(parameters.rateHz, 10.f);
+    EXPECT_FLOAT_EQ(parameters.inputGainDB, 3.f);
+    EXPECT_FLOAT_EQ(parameters.outputGainDB, 3.f);
+    EXPECT_TRUE(parameters.isBypassed);
+    EXPECT_EQ(juce::String {"Triangle"}, parameters.waveformShape.getCurrentChoiceName());
 }
 
 TEST(JsonSerializer, DontUpdateParametersWhenWaveformNameIsInvalid) {
     // given
     const juce::String savedParameters = u8R"({
   "__version__": 1,
-  "pluginName": "Tremolo",
+  "pluginName": "TremoloTodo",
   "modulationRateHz": 10.0,
+  "inputGainDB": 0.0,
+  "outputGainDB": 0.0,
   "bypassed": true,
   "modulationWaveform": "Foo"
 })";
@@ -67,17 +77,22 @@ TEST(JsonSerializer, DontUpdateParametersWhenWaveformNameIsInvalid) {
     PluginProcessor processor;
     auto& parameters = processor.getParameterRefs();
 
-    parameters.waveform = 0;
-    parameters.bypassed = false;
-    parameters.rate     = 5.f;
+    parameters.waveformShape = 0;
+    parameters.isBypassed    = false;
+    parameters.rateHz        = 5.f;
+    parameters.inputGainDB   = 0.0f;
+    parameters.outputGainDB  = 0.0f;
 
     // when
     const auto result = JsonSerializer::deserialize(inputStream, parameters);
 
     // then
     EXPECT_TRUE(result.failed());
-    EXPECT_FLOAT_EQ(parameters.rate.get(), 5.f);
-    EXPECT_FALSE(parameters.bypassed.get());
-    EXPECT_EQ(0, parameters.waveform.getIndex());
+    EXPECT_FLOAT_EQ(parameters.rateHz.get(), 5.f);
+    EXPECT_FLOAT_EQ(parameters.inputGainDB.get(), 0.f);
+    EXPECT_FLOAT_EQ(parameters.outputGainDB.get(), 0.f);
+    EXPECT_FLOAT_EQ(parameters.rateHz.get(), 5.f);
+    EXPECT_FALSE(parameters.isBypassed.get());
+    EXPECT_EQ(0, parameters.waveformShape.getIndex());
 }
 }  // namespace tremolo

@@ -45,6 +45,10 @@ class PluginProcessor: public juce::AudioProcessor {
 
     juce::AudioProcessorParameter* getBypassParameter() const override;
 
+    Parameters& getParameterRefs() noexcept {
+        return parameters;
+    }
+
   private:
     Parameters parameters {*this};
 
